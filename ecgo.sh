@@ -12,6 +12,11 @@
 # THE SOFTWARE.
 set -e
 
+# defaults
+encrypt_args=""
+decrypt_args=""
+output=""
+
 function help {
     echo -e "Encrypts the directory and pushes it to Google Drive."
     echo -e "(or any other destination that Rclone can handle)\n"
@@ -67,28 +72,41 @@ function decrypt {
     echo -e "===> Output from your GPG (it asks for the decryption key):"
     gpg -d -o $temp/$base_name.tar.gz $archive_path
 
-    if [ -z $output ]; then      # output is optional
-       $output=.
+    if [ -z $output ]; then         # output is optional
+        $output=$(pwd)
+    else
+        output="$(cd $output; pwd)" # get rid of trailing slashes if any
     fi
 
     # untaring
     echo -e "===> Untaring the directory..."
-    mkdir $base_name
+    mkdir $output/$base_name
     tar -xvf $temp/$base_name.tar.gz -C $output/$base_name
 }
 
+# parse options
 while getopts "he:d:o:" option; do
     case $option in
+        e) encrypt_args=$OPTARG
+           ;;
+        d) decrypt_args=$OPTARG
+           ;;
         o) output=$OPTARG
-           ;;
-        e) encrypt $OPTARG
-           exit
-           ;;
-        d) decrypt $OPTARG
-           exit
            ;;
         h | *) help
                exit
                ;;
     esac
 done
+
+# take actions
+if ! [ -z "$encrypt_args" ]; then
+    encrypt $encrypt_args
+    exit
+elif ! [ -z "$decrypt_args" ]; then
+    decrypt $decrypt_args
+    exit
+elif ! [ -z "$output" ]; then
+    help
+    exit
+fi
