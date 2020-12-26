@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Author: Novak Boškov <gnovak.boskov@gmail.com>
 # Date: Dec, 2020.
@@ -17,7 +17,7 @@ encrypt_args=""
 decrypt_args=""
 output=""
 
-function help {
+print_help() {
     echo -e "Encrypts the directory and pushes it to Google Drive."
     echo -e "(or any other destination that Rclone can handle)\n"
     echo -e "PLEASE MAKE SURE THAT THE NAME OF THE DIRECTORY YOU ENCRYPT DOES NOT REVEAL UNWANTED INFORMATION.\n"
@@ -35,7 +35,7 @@ function help {
     echo -e "\t./ecgo.sh -d my_remote:/Encrypted/Pictures.tar.gz.gpg -o ~/Desktop"
 }
 
-function encrypt {
+encrypt() {
     if [ -z "$SECRET_REMOTE_PATH" ]; then
         echo "SECRET_REMOTE_PATH is not specified, please do so."
         exit
@@ -56,7 +56,7 @@ function encrypt {
     rclone -P copy $temp/$dir_name.tar.gz.gpg $SECRET_REMOTE_PATH
 }
 
-function decrypt {
+decrypt() {
     archive_path=$1
     temp=$(mktemp -d)
     base_name=$(basename $archive_path | cut -d. -f1)
@@ -79,7 +79,7 @@ function decrypt {
     fi
 
     # untaring
-    echo -e "===> Untaring the directory..."
+    echo -e "===> Untaring $output/$base_name ..."
     mkdir $output/$base_name
     tar -xvf $temp/$base_name.tar.gz -C $output/$base_name
 }
@@ -93,7 +93,7 @@ while getopts "he:d:o:" option; do
            ;;
         o) output=$OPTARG
            ;;
-        h | *) help
+        h | *) print_help
                exit
                ;;
     esac
@@ -107,6 +107,6 @@ elif ! [ -z "$decrypt_args" ]; then
     decrypt $decrypt_args
     exit
 elif ! [ -z "$output" ]; then
-    help
+    print_help
     exit
 fi
