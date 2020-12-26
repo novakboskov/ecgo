@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Author: Novak Boškov <gnovak.boskov@gmail.com>
 # Date: Dec, 2020.
