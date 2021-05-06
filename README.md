@@ -38,5 +38,10 @@ encrypt it. You may for example use your `rsa3072` keys (see
 "fairly secure" ("except probably against [quantum
 attacks](https://www.technologyreview.com/2019/05/30/65724/how-a-quantum-computer-could-break-2048-bit-rsa-encryption-in-8-hours/)").
 
+# Why this script exists?
+It exists to illustrate that "encrypting data at rest" can be done by
+the cloud storage user who, for any reason, does not trust the cloud
+storage provider.
+
 # License
 Public-domain software
