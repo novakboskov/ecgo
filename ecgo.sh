@@ -17,22 +17,44 @@ encrypt_args=""
 decrypt_args=""
 output=""
 
-print_help() {
-    echo -e "Encrypts the directory and pushes it to Google Drive."
-    echo -e "(or any other destination that Rclone can handle)\n"
-    echo -e "PLEASE MAKE SURE THAT THE NAME OF THE DIRECTORY YOU ENCRYPT DOES NOT REVEAL UNWANTED INFORMATION.\n"
-    echo -e "Uses GnuPG to encrypt the directory and Rclone to push the directory to Google Drive."
-    echo -e "Both gpg and rclone need to be installed.\n"
-    echo -e "Usage: ./ecgo.sh OPTIONS\n"
-    echo -e "Set SECRET_REMOTE_PATH environment variable to specify the rclone path where you want to put your ecnrypted data.\n"
-    echo -e "OPTIONS:"
-    echo -e "\t-h Prints the help message."
-    echo -e "\t-e Encrypts the directory and pushes it to Google Drive."
-    echo -e "\t-d Decrypts the directory."
-    echo -e "\t-o Output directory (makes sense with -d)."
-    echo -e "\n Examples:"
-    echo -e "\tSECRET_REMOTE_PATH=my_remote:/Encrypted ./ecgo.sh -e ~/Pictures"
-    echo -e "\t./ecgo.sh -d my_remote:/Encrypted/Pictures.tar.gz.gpg -o ~/Desktop"
+help() {
+    cat <<EOF
+reping constantly pings the set of IP addresses and records the RTTs in termporary
+files. In parallel, it periodically incorporates the termporary files into the
+single output file that is useful for analysis. Ping sends an ICMP ECHO_REQUEST
+each second.
+
+Do not pass the same IP address multiple times. You will get only one single result.
+
+Usage: ./reping.sh [-c] -o OUTPUT_FILE -p PERIOD IP_1 [IP_2 ...]
+
+Parameters:
+  IP_1 [IP_2] are the IP addresses to ping.
+
+Options:
+  -o file where the results will be stored.
+  -p time interval to refresh the output file cumulatively.
+  -c clean the artifacts of previous reping runs.
+
+IP addresses in OUTPUT_FILE are modified. Any dots are replaced with dashes.
+
+CAUTION: This program is designed to save disk space but is by no means optimal.
+Given that:
+- P is the period to refresh output file (e.g., 1 minute) (PERIOD),
+- disk(P) is the file size that a call to ping produces in P,
+- T is the multiple of P that tells how long we run this program for, and
+- N is the number of IP addresses to ping.
+Then the required disk space is 2*N*T*disk(P).
+For example, for N=128, P=1m, T=60, and disk(P)=700B, we need 11MB of disk space.
+That is, we will likely reach 1GB of disk space in 4 days of running this program.
+
+A common usage patern is:
+timeout --signal 9 1445m ./reping.sh -o my_output.dat -p 1h google.com yahoo.com
+
+This will ping google.com and yahoo.com each second over one day and
+refresh statistics each hour. The extra 5 minutes passed to the timeout command
+are to give the statistics combinator some extra time to complete its task.
+EOF
 }
 
 encrypt() {
@@ -93,7 +115,7 @@ while getopts "he:d:o:" option; do
            ;;
         o) output=$OPTARG
            ;;
-        h | *) print_help
+        h | *) help
                exit
                ;;
     esac
@@ -107,6 +129,6 @@ elif ! [ -z "$decrypt_args" ]; then
     decrypt $decrypt_args
     exit
 elif ! [ -z "$output" ]; then
-    print_help
+    help
     exit
 fi
